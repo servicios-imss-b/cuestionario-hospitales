@@ -129,35 +129,28 @@ export const CaptureTable: React.FC<CaptureTableProps> = ({
 
       {/* Progress & Filter Bar (Sticky on scroll) */}
       <div className="sticky top-16 z-30 institutional-glass-subtle rounded-2xl p-4 sm:p-5 border border-emerald-600/30 shadow-2xl backdrop-blur-md">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
-          {/* Progress stats */}
-          <div>
-            <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
-              <span>Progreso del Cuestionario:</span>
-              <span className="text-emerald-400 text-sm">{progress.percentage}%</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
-              <span className="flex items-center text-emerald-300 font-semibold space-x-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>{progress.answered} respondidas</span>
-              </span>
-              <span className="text-slate-600">•</span>
-              <span className="flex items-center text-amber-300 font-semibold space-x-1">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{progress.pending} pendientes</span>
-              </span>
-              {progress.errorCount > 0 && (
-                <>
-                  <span className="text-slate-600">•</span>
-                  <span className="flex items-center text-rose-300 font-semibold space-x-1">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    <span>{progress.errorCount} con error</span>
-                  </span>
-                </>
-              )}
-              <span className="text-slate-600">•</span>
-              <span className="text-slate-400">{progress.total} preguntas totales</span>
-            </div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
+            <span className="flex items-center text-emerald-300 font-semibold space-x-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>{progress.answered} respondidas</span>
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="flex items-center text-amber-300 font-semibold space-x-1">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{progress.pending} pendientes</span>
+            </span>
+            {progress.errorCount > 0 && (
+              <>
+                <span className="text-slate-600">•</span>
+                <span className="flex items-center text-rose-300 font-semibold space-x-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>{progress.errorCount} con error</span>
+                </span>
+              </>
+            )}
+            <span className="text-slate-600">•</span>
+            <span className="text-slate-400">{progress.total} preguntas totales</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -171,13 +164,6 @@ export const CaptureTable: React.FC<CaptureTableProps> = ({
           </div>
         </div>
 
-        {/* Visual Progress Bar */}
-        <div className="w-full h-2.5 bg-black/50 rounded-full overflow-hidden border border-white/5">
-          <div
-            className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 rounded-full"
-            style={{ width: `${progress.percentage}%` }}
-          />
-        </div>
       </div>
 
       {/* Main Questionnaire Capture Table Container */}
@@ -401,18 +387,7 @@ export const CaptureTable: React.FC<CaptureTableProps> = ({
       </div>
 
       {/* Footer bar with button to review */}
-      <div className="p-4 sm:p-6 institutional-glass rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-emerald-600/30 shadow-2xl">
-        <div className="text-xs text-slate-300">
-          <span className="font-bold text-white block sm:inline mr-2">
-            Avance: {progress.answered} de {progress.total} preguntas ({progress.percentage}%)
-          </span>
-          {progress.pending > 0 && (
-            <span className="text-amber-400">
-              {progress.pending} preguntas obligatorias aún por contestar.
-            </span>
-          )}
-        </div>
-
+      <div className="p-4 sm:p-6 institutional-glass rounded-2xl flex justify-end border border-emerald-600/30 shadow-2xl">
         <button
           onClick={onGoToReview}
           className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm tracking-wide shadow-xl transition-all flex items-center justify-center space-x-2 cursor-pointer"

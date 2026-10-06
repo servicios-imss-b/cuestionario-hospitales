@@ -122,17 +122,8 @@ export const ReviewStage: React.FC<ReviewStageProps> = ({
         </div>
 
         {/* Progress Metrics Overview */}
-        <div className="p-5 rounded-xl bg-black/50 border border-emerald-900/40 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Porcentaje de Avance:
-              </span>
-              <span className="text-xl font-extrabold text-emerald-400">
-                {progress.percentage}%
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs">
+        <div className="p-5 rounded-xl bg-black/50 border border-emerald-900/40">
+          <div className="flex flex-wrap items-center gap-3 text-xs">
               <span className="px-2.5 py-1 rounded-lg bg-emerald-950/80 text-emerald-300 border border-emerald-600/40 flex items-center space-x-1.5 font-semibold">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 <span>{progress.answered} respondidas</span>
@@ -148,14 +139,6 @@ export const ReviewStage: React.FC<ReviewStageProps> = ({
                 </span>
               )}
               <span className="text-slate-400">Total: {progress.total} preguntas</span>
-            </div>
-          </div>
-
-          <div className="w-full h-2.5 bg-black/50 rounded-full overflow-hidden border border-white/5">
-            <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 rounded-full"
-              style={{ width: `${progress.percentage}%` }}
-            />
           </div>
         </div>
 

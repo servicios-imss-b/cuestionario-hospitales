@@ -49,11 +49,6 @@ const checkInternetConnection = async (): Promise<boolean> => {
 const createSubmissionId = (): string =>
   `IMSSB-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-const ageRange = (value: unknown): string => {
-  const age = Number(value);
-  return age < 40 ? 'Menos de 40' : age < 50 ? '40 a 49' : age < 60 ? '50 a 59' : '60 o más';
-};
-
 const getQuestionsForRole = (
   role: UserRole,
   answers: Record<string, any>,
@@ -78,10 +73,7 @@ const groupAnswersBySection = (
       section = { sectionId: question.sectionId, sectionTitle: question.sectionTitle, answers: {} };
       sections.set(question.sectionId, section);
     }
-    const answer = answers[question.id];
-    section.answers[question.id] = question.id === 'A3' && answer !== undefined && answer !== null && answer !== ''
-      ? ageRange(answer)
-      : answer ?? '';
+    section.answers[question.id] = answers[question.id] ?? '';
   }
   return Array.from(sections.values());
 };
@@ -99,9 +91,6 @@ const buildSubmissionSnapshot = (
   const reportedAnswers = Object.fromEntries(
     Object.entries(answers).filter(([key]) => !key.endsWith('__confirmed'))
   );
-  if (reportedAnswers.A3 !== undefined && reportedAnswers.A3 !== null && reportedAnswers.A3 !== '') {
-    reportedAnswers.A3 = ageRange(reportedAnswers.A3);
-  }
   const regionName = role === 'coordinador' ? String(answers.A2_coord || '') : clues.region;
 
   return {
@@ -132,8 +121,6 @@ export default function App() {
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
-  const [isDatabaseConnected, setIsDatabaseConnected] = useState(false);
-  const [pendingSyncCount, setPendingSyncCount] = useState(0);
 
   const [saveStatus, setSaveStatus] = useState<'saving' | 'saved' | 'error'>('saved');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -146,10 +133,8 @@ export default function App() {
   const databaseConnectedRef = useRef(false);
 
   const syncPendingSubmissions = useCallback(async () => {
-    setPendingSyncCount(storageService.getPendingSubmissions().length);
     if (!navigator.onLine || !googleSheetsService.isConfigured() || syncInProgressRef.current) {
       databaseConnectedRef.current = false;
-      setIsDatabaseConnected(false);
       return;
     }
 
@@ -157,7 +142,6 @@ export default function App() {
     try {
       const connected = databaseConnectedRef.current || await googleSheetsService.checkConnection();
       databaseConnectedRef.current = connected;
-      setIsDatabaseConnected(connected);
       if (!connected) return;
 
       while (navigator.onLine) {
@@ -165,20 +149,17 @@ export default function App() {
         if (!submission) break;
         if (!navigator.onLine) {
           databaseConnectedRef.current = false;
-          setIsDatabaseConnected(false);
           break;
         }
         const delivered = await googleSheetsService.sendSubmission(submission);
         if (!delivered) {
           databaseConnectedRef.current = false;
-          setIsDatabaseConnected(false);
           break;
         }
         storageService.markSubmissionSynced(submission.submissionId, submission.submittedAt);
       }
     } finally {
       syncInProgressRef.current = false;
-      setPendingSyncCount(storageService.getPendingSubmissions().length);
     }
   }, []);
 
@@ -254,7 +235,6 @@ export default function App() {
     const handleOffline = () => {
       setIsOnline(false);
       databaseConnectedRef.current = false;
-      setIsDatabaseConnected(false);
     };
 
     window.addEventListener('online', updateConnectivity);
@@ -366,7 +346,6 @@ export default function App() {
                 'draft'
               )
             );
-            setPendingSyncCount(storageService.getPendingSubmissions().length);
             void syncPendingSubmissions();
           }
           setSaveStatus('saved');
@@ -423,19 +402,33 @@ export default function App() {
 
   // Confirm entity and clues selection
   const handleConfirmInstitutionalSelection = (newEntity: Entity, newClues: Clues, newRole: UserRole) => {
-    const sameSubmission = entity?.id === newEntity.id && clues?.clues === newClues.clues && submissionId;
-    const currentSubmissionId = sameSubmission || createSubmissionId();
+    const identityChanged = entity?.id !== newEntity.id || clues?.clues !== newClues.clues || role !== newRole;
+    let currentSubmissionId = submissionId || createSubmissionId();
+
+    if (identityChanged) {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+      if (entity && clues && submissionId && capturedAnswersCount > 0) {
+        storageService.saveSubmissionSnapshot(
+          buildSubmissionSnapshot(submissionId, entity, clues, role, activeQuestions, answers, 'draft')
+        );
+        void syncPendingSubmissions();
+      }
+      storageService.clearDraft();
+      currentSubmissionId = createSubmissionId();
+      setAnswers({});
+      setEditingQuestionId(null);
+      setCompletedSubmission(null);
+    }
+
     setEntity(newEntity);
     setClues(newClues);
     setRole(newRole);
     setSubmissionId(currentSubmissionId);
     autoReviewDoneRef.current = false;
-
-    setAnswers((prev) => {
-      const updated = { ...prev };
-      triggerAutoSave(updated, newEntity, newClues, newRole, currentSubmissionId);
-      return updated;
-    });
+    if (identityChanged) triggerAutoSave({}, newEntity, newClues, newRole, currentSubmissionId);
 
     goToStage('capture');
   };
@@ -463,7 +456,6 @@ export default function App() {
 
     try {
       storageService.saveSubmissionSnapshot(submissionPayload);
-      setPendingSyncCount(storageService.getPendingSubmissions().length);
       setCompletedSubmission(submissionPayload);
 
       // Clean local draft after completed submission
@@ -517,8 +509,6 @@ export default function App() {
         saveStatus={saveStatus}
         currentStage={stage}
         isOnline={isOnline}
-        isDatabaseConnected={isDatabaseConnected}
-        pendingSyncCount={pendingSyncCount}
       />
 
       {/* Main Content Area based on Stage */}

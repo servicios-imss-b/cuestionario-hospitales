@@ -111,7 +111,7 @@ export const QUESTIONS_CATALOG: Question[] = [
       min: 25,
       max: 80,
     },
-    help: 'Número entero de 25 a 80 años. La edad se captura exacta para validar, pero se reporta solo en rangos anónimos.',
+    help: 'Número entero de 25 a 80 años. Se conserva la edad exacta en las respuestas.',
   },
   {
     id: 'A4',
