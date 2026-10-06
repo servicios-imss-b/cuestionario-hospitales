@@ -37,16 +37,23 @@ export const storageService = {
     }
   },
 
-  saveCompletedSubmission(submission: SurveySubmission): void {
+  saveSubmissionSnapshot(submission: SurveySubmission): void {
     try {
       const existingStr = localStorage.getItem(STORAGE_KEY_SUBMISSIONS);
       const list: StoredSubmission[] = existingStr ? JSON.parse(existingStr) : [];
-      if (list.some((item) => item.submissionId === submission.submissionId)) return;
-      list.push({ ...submission, syncStatus: 'pending' });
+      const existingIndex = list.findIndex((item) => item.submissionId === submission.submissionId);
+      const storedSubmission: StoredSubmission = { ...submission, syncStatus: 'pending' };
+      if (existingIndex === -1) list.push(storedSubmission);
+      else list[existingIndex] = storedSubmission;
       localStorage.setItem(STORAGE_KEY_SUBMISSIONS, JSON.stringify(list));
     } catch (err) {
-      console.error('Error al respaldar envío:', err);
+      console.error('Error al respaldar sincronización pendiente:', err);
+      throw err;
     }
+  },
+
+  saveCompletedSubmission(submission: SurveySubmission): void {
+    this.saveSubmissionSnapshot({ ...submission, submissionStatus: 'completed' });
   },
 
   getSubmissions(): SurveySubmission[] {
@@ -68,7 +75,7 @@ export const storageService = {
     }
   },
 
-  markSubmissionSynced(submissionId: string): void {
+  markSubmissionSynced(submissionId: string, submittedAt: string): void {
     try {
       const data = localStorage.getItem(STORAGE_KEY_SUBMISSIONS);
       const submissions: StoredSubmission[] = data ? JSON.parse(data) : [];
@@ -76,7 +83,9 @@ export const storageService = {
         STORAGE_KEY_SUBMISSIONS,
         JSON.stringify(
           submissions.map((item) =>
-            item.submissionId === submissionId ? { ...item, syncStatus: 'synced' } : item
+            item.submissionId === submissionId && item.submittedAt === submittedAt
+              ? { ...item, syncStatus: 'synced' }
+              : item
           )
         )
       );

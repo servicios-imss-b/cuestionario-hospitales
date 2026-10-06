@@ -10,6 +10,8 @@ const SUBMISSION_HEADERS = [
   'preguntas_total',
   'preguntas_respondidas',
   'region',
+  'estado',
+  'estado',
 ];
 const SECTION_SHEETS = {
   sec_a: 'Seccion_A',
@@ -71,6 +73,8 @@ function doPost(event) {
         submission.totalQuestions,
         submission.answeredQuestions,
         submission.regionName || '',
+        submission.submissionStatus === 'completed' ? 'Completado' : 'Borrador',
+        submission.submissionStatus === 'completed' ? 'Completado' : 'Borrador',
       ]);
 
       for (const section of submission.answersBySection) {

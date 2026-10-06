@@ -30,7 +30,7 @@ interface CaptureTableProps {
   progress: ProgressSummary;
   editingQuestionId: string | null;
   onAnswerChange: (questionId: string, value: any) => void;
-  onConfirmMultipleAnswer: (questionId: string, confirmed: boolean) => void;
+  onConfirmAnswer: (questionId: string, confirmed: boolean) => void;
   onGoToReview: () => void;
   onBackToSelector: () => void;
 }
@@ -44,7 +44,7 @@ export const CaptureTable: React.FC<CaptureTableProps> = ({
   progress,
   editingQuestionId,
   onAnswerChange,
-  onConfirmMultipleAnswer,
+  onConfirmAnswer,
   onGoToReview,
   onBackToSelector,
 }) => {
@@ -326,7 +326,7 @@ export const CaptureTable: React.FC<CaptureTableProps> = ({
                               exactSelectionCount={question.validation?.exactSelectionCount}
                               requiresConfirmation={question.validation?.requiresConfirmation}
                               isConfirmed={answers[`${question.id}__confirmed`] === true}
-                              onConfirm={(confirmed) => onConfirmMultipleAnswer(question.id, confirmed)}
+                              onConfirm={(confirmed) => onConfirmAnswer(question.id, confirmed)}
                               value={currentAns}
                               onChange={(val) => onAnswerChange(question.id, val)}
                             />
@@ -356,6 +356,7 @@ export const CaptureTable: React.FC<CaptureTableProps> = ({
                               questionId={question.id}
                               value={currentAns}
                               onChange={(val) => onAnswerChange(question.id, val)}
+                              onConfirm={() => onConfirmAnswer(question.id, true)}
                             />
                           )}
 
@@ -366,6 +367,7 @@ export const CaptureTable: React.FC<CaptureTableProps> = ({
                               min={question.validation?.min}
                               max={question.validation?.max}
                               onChange={(val) => onAnswerChange(question.id, val)}
+                              onConfirm={() => onConfirmAnswer(question.id, true)}
                             />
                           )}
 
@@ -376,6 +378,7 @@ export const CaptureTable: React.FC<CaptureTableProps> = ({
                               maxLength={question.validation?.maxLength}
                               value={currentAns}
                               onChange={(val) => onAnswerChange(question.id, val)}
+                              onConfirm={() => onConfirmAnswer(question.id, true)}
                             />
                           )}
 

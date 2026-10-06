@@ -46,6 +46,19 @@ export function calculateSurveyProgress(
         result.status = 'error';
         result.errorMessage = 'Confirme la selección para continuar.';
       }
+      const requiresEnter =
+        q.type === 'number' ||
+        q.type === 'short_text' ||
+        q.type === 'long_text' ||
+        (q.type === 'amount_conditional' &&
+          val?.option === 'Sí' &&
+          !val.unknownAmount &&
+          val.amount !== undefined &&
+          val.amount !== '');
+      if (requiresEnter && result.status === 'answered' && answers[`${q.id}__confirmed`] !== true) {
+        result.status = 'error';
+        result.errorMessage = 'Presione Enter para confirmar esta respuesta.';
+      }
       questionStatuses[q.id] = result;
       if (result.status === 'answered') {
         answered++;

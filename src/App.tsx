@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Entity, Clues, UserRole, SurveySubmission } from './types/questionnaire';
+import { Entity, Clues, Question, UserRole, SurveySubmission } from './types/questionnaire';
 import { QUESTIONS_CATALOG, getActiveQuestions } from './data/questions';
 import { calculateSurveyProgress } from './utils/progress';
 import { storageService } from './services/storage';
@@ -46,11 +46,88 @@ const checkInternetConnection = async (): Promise<boolean> => {
   }
 };
 
+const createSubmissionId = (): string =>
+  `IMSSB-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+const ageRange = (value: unknown): string => {
+  const age = Number(value);
+  return age < 40 ? 'Menos de 40' : age < 50 ? '40 a 49' : age < 60 ? '50 a 59' : '60 o más';
+};
+
+const getQuestionsForRole = (
+  role: UserRole,
+  answers: Record<string, any>,
+  entityId: string | undefined
+): Question[] => getActiveQuestions(role, answers).map((question) =>
+  question.id === 'A2_coord'
+    ? {
+        ...question,
+        options: getRegionsForEntity(entityId || '').map((region) => ({ value: region, label: region })),
+      }
+    : question
+);
+
+const groupAnswersBySection = (
+  questions: Question[],
+  answers: Record<string, any>
+): SurveySubmission['answersBySection'] => {
+  const sections = new Map<string, SurveySubmission['answersBySection'][number]>();
+  for (const question of questions) {
+    let section = sections.get(question.sectionId);
+    if (!section) {
+      section = { sectionId: question.sectionId, sectionTitle: question.sectionTitle, answers: {} };
+      sections.set(question.sectionId, section);
+    }
+    const answer = answers[question.id];
+    section.answers[question.id] = question.id === 'A3' && answer !== undefined && answer !== null && answer !== ''
+      ? ageRange(answer)
+      : answer ?? '';
+  }
+  return Array.from(sections.values());
+};
+
+const buildSubmissionSnapshot = (
+  submissionId: string,
+  entity: Entity,
+  clues: Clues,
+  role: UserRole,
+  questions: Question[],
+  answers: Record<string, any>,
+  submissionStatus: 'draft' | 'completed'
+): SurveySubmission => {
+  const progress = calculateSurveyProgress(questions, answers);
+  const reportedAnswers = Object.fromEntries(
+    Object.entries(answers).filter(([key]) => !key.endsWith('__confirmed'))
+  );
+  if (reportedAnswers.A3 !== undefined && reportedAnswers.A3 !== null && reportedAnswers.A3 !== '') {
+    reportedAnswers.A3 = ageRange(reportedAnswers.A3);
+  }
+  const regionName = role === 'coordinador' ? String(answers.A2_coord || '') : clues.region;
+
+  return {
+    submissionId,
+    submittedAt: new Date().toISOString(),
+    entityId: entity.id,
+    entityName: entity.name,
+    cluesCode: role === 'director' ? clues.clues : '',
+    hospitalName: role === 'director' ? clues.name : 'Coordinación regional',
+    regionName,
+    role,
+    totalQuestions: progress.total,
+    answeredQuestions: progress.answered,
+    answers: reportedAnswers,
+    answersBySection: groupAnswersBySection(questions, answers),
+    submissionStatus,
+    storageMethod: 'local_backup',
+  };
+};
+
 export default function App() {
   const [stage, setStage] = useState<AppStage>('cover');
   const [entity, setEntity] = useState<Entity | null>(null);
   const [clues, setClues] = useState<Clues | null>(null);
   const [role, setRole] = useState<UserRole>('director');
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
@@ -66,31 +143,38 @@ export default function App() {
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const autoReviewDoneRef = useRef(false);
   const syncInProgressRef = useRef(false);
+  const databaseConnectedRef = useRef(false);
 
   const syncPendingSubmissions = useCallback(async () => {
     setPendingSyncCount(storageService.getPendingSubmissions().length);
     if (!navigator.onLine || !googleSheetsService.isConfigured() || syncInProgressRef.current) {
+      databaseConnectedRef.current = false;
       setIsDatabaseConnected(false);
       return;
     }
 
     syncInProgressRef.current = true;
     try {
-      const connected = await googleSheetsService.checkConnection();
+      const connected = databaseConnectedRef.current || await googleSheetsService.checkConnection();
+      databaseConnectedRef.current = connected;
       setIsDatabaseConnected(connected);
       if (!connected) return;
 
-      for (const submission of storageService.getPendingSubmissions()) {
+      while (navigator.onLine) {
+        const submission = storageService.getPendingSubmissions()[0];
+        if (!submission) break;
         if (!navigator.onLine) {
+          databaseConnectedRef.current = false;
           setIsDatabaseConnected(false);
           break;
         }
         const delivered = await googleSheetsService.sendSubmission(submission);
         if (!delivered) {
+          databaseConnectedRef.current = false;
           setIsDatabaseConnected(false);
           break;
         }
-        storageService.markSubmissionSynced(submission.submissionId);
+        storageService.markSubmissionSynced(submission.submissionId, submission.submittedAt);
       }
     } finally {
       syncInProgressRef.current = false;
@@ -134,6 +218,32 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const draft = storageService.loadDraft();
+    if (!draft?.submissionId || !draft.entity || !draft.clues || !draft.answers) return;
+
+    setEntity(draft.entity);
+    setClues(draft.clues);
+    setRole(draft.role || 'director');
+    setSubmissionId(draft.submissionId);
+    setAnswers(draft.answers);
+    autoReviewDoneRef.current = false;
+    goToStage('capture', true);
+  }, [goToStage]);
+
+  useEffect(() => {
+    const draft = storageService.loadDraft();
+    if (!draft?.submissionId || !draft.entity || !draft.clues || !draft.answers) return;
+
+    setEntity(draft.entity);
+    setClues(draft.clues);
+    setRole(draft.role || 'director');
+    setSubmissionId(draft.submissionId);
+    setAnswers(draft.answers);
+    autoReviewDoneRef.current = false;
+    goToStage('capture', true);
+  }, [goToStage]);
+
+  useEffect(() => {
     let isCurrent = true;
     const updateConnectivity = async () => {
       const connected = await checkInternetConnection();
@@ -143,6 +253,7 @@ export default function App() {
     };
     const handleOffline = () => {
       setIsOnline(false);
+      databaseConnectedRef.current = false;
       setIsDatabaseConnected(false);
     };
 
@@ -175,14 +286,7 @@ export default function App() {
 
   // Compute active questions based on current role and answers
   const activeQuestions = useMemo(() => {
-    return getActiveQuestions(role, answers).map((question) =>
-      question.id === 'A2_coord'
-        ? {
-            ...question,
-            options: getRegionsForEntity(entity?.id || '').map((region) => ({ value: region, label: region })),
-          }
-        : question
-    );
+    return getQuestionsForRole(role, answers, entity?.id);
   }, [role, answers, entity?.id]);
 
   // Compute progress summary
@@ -215,7 +319,13 @@ export default function App() {
 
   // Debounced auto-save function
   const triggerAutoSave = useCallback(
-    (newAnswers: Record<string, any>, currentEnt: Entity | null, currentClues: Clues | null, currentRole: UserRole) => {
+    (
+      newAnswers: Record<string, any>,
+      currentEnt: Entity | null,
+      currentClues: Clues | null,
+      currentRole: UserRole,
+      currentSubmissionId: string
+    ) => {
       setSaveStatus('saving');
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
@@ -229,8 +339,36 @@ export default function App() {
             role: currentRole,
             answers: newAnswers,
             isCompleted: false,
-            submissionId: null,
+            submissionId: currentSubmissionId,
           });
+
+          const hasAnsweredQuestion = Object.entries(newAnswers).some(([key, value]) =>
+            !key.endsWith('__confirmed') &&
+            value !== undefined &&
+            value !== null &&
+            value !== '' &&
+            (!Array.isArray(value) || value.length > 0)
+          );
+          const identityReady = currentRole === 'coordinador'
+            ? Boolean(newAnswers.A2_coord)
+            : Boolean(currentClues?.clues);
+
+          if (currentEnt && currentClues && currentSubmissionId && hasAnsweredQuestion && identityReady) {
+            const questions = getQuestionsForRole(currentRole, newAnswers, currentEnt.id);
+            storageService.saveSubmissionSnapshot(
+              buildSubmissionSnapshot(
+                currentSubmissionId,
+                currentEnt,
+                currentClues,
+                currentRole,
+                questions,
+                newAnswers,
+                'draft'
+              )
+            );
+            setPendingSyncCount(storageService.getPendingSubmissions().length);
+            void syncPendingSubmissions();
+          }
           setSaveStatus('saved');
         } catch (e) {
           console.error('Error auto-saving:', e);
@@ -238,7 +376,7 @@ export default function App() {
         }
       }, 500);
     },
-    []
+    [syncPendingSubmissions]
   );
 
   // Handle single question answer update
@@ -249,12 +387,15 @@ export default function App() {
       ? buildRegionalClues(entity.id, value)
       : clues;
     if (questionId === 'A2_coord' && currentClues !== clues) setClues(currentClues);
+    const currentSubmissionId = submissionId || createSubmissionId();
+    if (!submissionId) setSubmissionId(currentSubmissionId);
     setAnswers((prev) => {
       const updated = {
         ...prev,
         [questionId]: value,
       };
-      if (activeQuestions.find((question) => question.id === questionId)?.type === 'multiple') {
+      const questionType = activeQuestions.find((question) => question.id === questionId)?.type;
+      if (['multiple', 'number', 'short_text', 'long_text', 'amount_conditional'].includes(questionType || '')) {
         updated[`${questionId}__confirmed`] = false;
       }
 
@@ -265,29 +406,34 @@ export default function App() {
         setRole(value);
       }
 
-      triggerAutoSave(updated, entity, currentClues, newRole);
+      triggerAutoSave(updated, entity, currentClues, newRole, currentSubmissionId);
       return updated;
     });
   };
 
-  const handleMultipleAnswerConfirmation = (questionId: string, confirmed: boolean) => {
+  const handleAnswerConfirmation = (questionId: string, confirmed: boolean) => {
+    const currentSubmissionId = submissionId || createSubmissionId();
+    if (!submissionId) setSubmissionId(currentSubmissionId);
     setAnswers((prev) => {
       const updated = { ...prev, [`${questionId}__confirmed`]: confirmed };
-      triggerAutoSave(updated, entity, clues, role);
+      triggerAutoSave(updated, entity, clues, role, currentSubmissionId);
       return updated;
     });
   };
 
   // Confirm entity and clues selection
   const handleConfirmInstitutionalSelection = (newEntity: Entity, newClues: Clues, newRole: UserRole) => {
+    const sameSubmission = entity?.id === newEntity.id && clues?.clues === newClues.clues && submissionId;
+    const currentSubmissionId = sameSubmission || createSubmissionId();
     setEntity(newEntity);
     setClues(newClues);
     setRole(newRole);
+    setSubmissionId(currentSubmissionId);
     autoReviewDoneRef.current = false;
 
     setAnswers((prev) => {
       const updated = { ...prev };
-      triggerAutoSave(updated, newEntity, newClues, newRole);
+      triggerAutoSave(updated, newEntity, newClues, newRole, currentSubmissionId);
       return updated;
     });
 
@@ -298,55 +444,25 @@ export default function App() {
   const handleFinalSubmit = async () => {
     if (!entity || !clues) return;
     setIsSubmitting(true);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
 
-    const submissionId = `IMSSB-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const answersBySection = activeQuestions.reduce<SurveySubmission['answersBySection']>((sections, question) => {
-      let section = sections.find((item) => item.sectionId === question.sectionId);
-      if (!section) {
-        section = {
-          sectionId: question.sectionId,
-          sectionTitle: question.sectionTitle,
-          answers: {},
-        };
-        sections.push(section);
-      }
-      const answer = answers[question.id];
-      if (question.id === 'A3' && answer !== undefined && answer !== null && answer !== '') {
-        const age = Number(answer);
-        section.answers[question.id] = age < 40 ? 'Menos de 40'
-          : age < 50 ? '40 a 49'
-            : age < 60 ? '50 a 59'
-              : '60 o más';
-      } else {
-        section.answers[question.id] = answer ?? '';
-      }
-      return sections;
-    }, []);
-
-    const regionalName = role === 'coordinador' ? String(answers.A2_coord || '') : '';
-    const submittedAge = Number(answers.A3);
-    const submittedAgeRange = submittedAge < 40 ? 'Menos de 40'
-      : submittedAge < 50 ? '40 a 49'
-        : submittedAge < 60 ? '50 a 59'
-          : '60 o más';
-    const submissionPayload: SurveySubmission = {
-      submissionId,
-      submittedAt: new Date().toISOString(),
-      entityId: entity.id,
-      entityName: entity.name,
-      cluesCode: role === 'director' ? clues.clues : '',
-      hospitalName: role === 'director' ? clues.name : 'Coordinación regional',
-      regionName: role === 'coordinador' ? regionalName : clues.region,
+    const currentSubmissionId = submissionId || createSubmissionId();
+    setSubmissionId(currentSubmissionId);
+    const submissionPayload = buildSubmissionSnapshot(
+      currentSubmissionId,
+      entity,
+      clues,
       role,
-      totalQuestions: progress.total,
-      answeredQuestions: progress.answered,
-      answers: { ...answers, A3: submittedAgeRange },
-      answersBySection,
-      storageMethod: 'local_backup',
-    };
+      activeQuestions,
+      answers,
+      'completed'
+    );
 
     try {
-      storageService.saveCompletedSubmission(submissionPayload);
+      storageService.saveSubmissionSnapshot(submissionPayload);
       setPendingSyncCount(storageService.getPendingSubmissions().length);
       setCompletedSubmission(submissionPayload);
 
@@ -384,6 +500,7 @@ export default function App() {
     setClues(null);
     setAnswers({});
     setRole('director');
+    setSubmissionId(null);
     setCompletedSubmission(null);
     setEditingQuestionId(null);
     autoReviewDoneRef.current = false;
@@ -440,7 +557,7 @@ export default function App() {
             progress={progress}
             editingQuestionId={editingQuestionId}
             onAnswerChange={handleAnswerChange}
-            onConfirmMultipleAnswer={handleMultipleAnswerConfirmation}
+            onConfirmAnswer={handleAnswerConfirmation}
             onGoToReview={() => goToStage('review')}
             onBackToSelector={() => goToStage('selector')}
           />

@@ -6,6 +6,7 @@ interface NumberControlProps {
   min?: number;
   max?: number;
   onChange: (val: number | string) => void;
+  onConfirm?: () => void;
   disabled?: boolean;
 }
 
@@ -15,6 +16,7 @@ export const NumberControl: React.FC<NumberControlProps> = ({
   min = 25,
   max = 80,
   onChange,
+  onConfirm,
   disabled,
 }) => {
   return (
@@ -30,6 +32,12 @@ export const NumberControl: React.FC<NumberControlProps> = ({
           value={value ?? ''}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              onConfirm?.();
+            }
+          }}
           placeholder={`Entre ${min} y ${max} años`}
           className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 focus:border-emerald-500 text-white font-mono text-sm outline-none transition-colors"
         />

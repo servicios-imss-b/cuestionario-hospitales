@@ -10,6 +10,7 @@ interface AmountConditionalControlProps {
   questionId: string;
   value: AmountConditionalValue | undefined;
   onChange: (val: AmountConditionalValue) => void;
+  onConfirm?: () => void;
   disabled?: boolean;
 }
 
@@ -17,6 +18,7 @@ export const AmountConditionalControl: React.FC<AmountConditionalControlProps> =
   questionId,
   value = { option: '' },
   onChange,
+  onConfirm,
   disabled,
 }) => {
   const currentVal: AmountConditionalValue = value || { option: '' };
@@ -108,6 +110,12 @@ export const AmountConditionalControl: React.FC<AmountConditionalControlProps> =
                 disabled={disabled || currentVal.unknownAmount}
                 value={currentVal.amount ?? ''}
                 onChange={(e) => handleAmountChange(e.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    onConfirm?.();
+                  }
+                }}
                 placeholder="0.00"
                 className="w-full pl-8 pr-4 py-2.5 rounded-lg bg-black/60 border border-white/10 focus:border-emerald-500 text-white font-mono text-sm outline-none disabled:opacity-40"
               />

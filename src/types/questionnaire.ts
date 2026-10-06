@@ -109,6 +109,7 @@ export interface SurveySubmission {
   answeredQuestions: number;
   answers: Record<string, any>;
   answersBySection: SubmissionSection[];
+  submissionStatus?: 'draft' | 'completed';
   storageMethod: 'google_sheets' | 'local_backup';
 }
 

@@ -7,6 +7,7 @@ interface TextControlProps {
   maxLength?: number;
   placeholder?: string;
   onChange: (val: string) => void;
+  onConfirm?: () => void;
   disabled?: boolean;
 }
 
@@ -17,6 +18,7 @@ export const TextControl: React.FC<TextControlProps> = ({
   maxLength = 300,
   placeholder,
   onChange,
+  onConfirm,
   disabled,
 }) => {
   const currentLength = (value || '').length;
@@ -33,6 +35,12 @@ export const TextControl: React.FC<TextControlProps> = ({
           value={value ?? ''}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              onConfirm?.();
+            }
+          }}
           placeholder={placeholder || `Escriba su respuesta (máximo ${maxLength} caracteres)...`}
           className="w-full p-3 rounded-lg bg-black/40 border border-white/10 focus:border-emerald-500 text-white text-xs sm:text-sm outline-none transition-colors resize-y leading-relaxed"
         />
@@ -45,6 +53,12 @@ export const TextControl: React.FC<TextControlProps> = ({
           value={value ?? ''}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              onConfirm?.();
+            }
+          }}
           placeholder={placeholder || 'Escriba aquí...'}
           className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 focus:border-emerald-500 text-white text-xs sm:text-sm outline-none transition-colors"
         />
