@@ -1,0 +1,6 @@
+{
+  "name": "Cuestionario para Directivos y Coordinadores de Hospital",
+  "description": "Sistema institucional de captura de cuestionario anónimo por Entidad y CLUES para evaluación hospitalaria IMSS Bienestar.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
