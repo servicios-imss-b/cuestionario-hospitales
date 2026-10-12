@@ -18,3 +18,7 @@ View your app in AI Studio: https://ai.studio/apps/adb58f0e-c3ab-408a-b92a-3430b
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## GitHub Pages
+
+The `main` branch is built and published by `.github/workflows/deploy.yml`. In the repository settings, open **Settings > Pages > Build and deployment** and select **GitHub Actions** as the source. Do not publish the repository files directly from the `main` branch: the root `index.html` is Vite source and references `/src/main.tsx`, which browsers cannot run as a production bundle. The workflow builds `dist` with the repository base path and deploys that artifact.

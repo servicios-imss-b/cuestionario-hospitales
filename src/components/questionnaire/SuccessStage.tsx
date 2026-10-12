@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   CheckCircle2,
@@ -22,6 +22,11 @@ export const SuccessStage: React.FC<SuccessStageProps> = ({
   submission,
   onReset,
 }) => {
+  useEffect(() => {
+    const timeoutId = window.setTimeout(onReset, 10000);
+    return () => window.clearTimeout(timeoutId);
+  }, [onReset]);
+
   const handleDownloadReceipt = () => {
     const dataStr =
       'data:text/json;charset=utf-8,' +
@@ -155,7 +160,7 @@ export const SuccessStage: React.FC<SuccessStageProps> = ({
             className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-lg shadow-emerald-950/60"
           >
             <RotateCcw className="w-4 h-4" />
-            <span>Capturar nuevo cuestionario</span>
+            <span>Volver al inicio</span>
           </button>
         </div>
       </motion.div>

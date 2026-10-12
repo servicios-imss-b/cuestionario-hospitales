@@ -16,7 +16,7 @@ export const CoverStage: React.FC<CoverStageProps> = ({ onStart }) => {
       >
         {/* Title */}
         <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 mb-3 leading-tight">
-          Cuestionario para Directores de Hospital y Coordinadores Regionales
+          Cuestionario para personal directivo hospitalario y de coordinación regional
         </h1>
         <p className="text-base sm:text-lg text-zinc-700 mb-6 font-normal leading-relaxed">
           Evaluación de la situación hospitalaria antes y después del proceso de incorporación al modelo IMSS Bienestar.

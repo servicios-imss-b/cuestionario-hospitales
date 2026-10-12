@@ -204,19 +204,6 @@ export default function App() {
   }, [goToStage]);
 
   useEffect(() => {
-    const draft = storageService.loadDraft();
-    if (!draft?.submissionId || !draft.entity || !draft.clues || !draft.answers) return;
-
-    setEntity(draft.entity);
-    setClues(draft.clues);
-    setRole(draft.role || 'director');
-    setSubmissionId(draft.submissionId);
-    setAnswers(draft.answers);
-    autoReviewDoneRef.current = false;
-    goToStage('capture', true);
-  }, [goToStage]);
-
-  useEffect(() => {
     let isCurrent = true;
     const updateConnectivity = async () => {
       const connected = await checkInternetConnection();
@@ -475,7 +462,7 @@ export default function App() {
   };
 
   // Reset questionnaire to start fresh
-  const handleResetSurvey = () => {
+  const handleResetSurvey = useCallback(() => {
     storageService.clearDraft();
     setEntity(null);
     setClues(null);
@@ -486,7 +473,7 @@ export default function App() {
     setEditingQuestionId(null);
     autoReviewDoneRef.current = false;
     goToStage('cover', true);
-  };
+  }, [goToStage]);
 
   return (
     <div className="min-h-screen text-slate-100 flex flex-col relative font-sans antialiased">
