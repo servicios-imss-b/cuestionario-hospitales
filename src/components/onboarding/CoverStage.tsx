@@ -1,11 +1,14 @@
-import React from 'react';
-import { UserX, Clock, Building2, ChevronRight, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { UserX, Clock, Building2, ChevronRight, Lock, MapPin } from 'lucide-react';
+import { UserRole } from '../../types/questionnaire';
 
 interface CoverStageProps {
-  onStart: () => void;
+  onStart: (role: UserRole) => void;
 }
 
 export const CoverStage: React.FC<CoverStageProps> = ({ onStart }) => {
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-start justify-center p-4 pt-8 sm:p-6 lg:p-8">
       <div
@@ -18,6 +21,36 @@ export const CoverStage: React.FC<CoverStageProps> = ({ onStart }) => {
         <p className="text-base sm:text-lg text-zinc-700 mb-6 font-normal leading-relaxed">
           Evaluación de la situación hospitalaria antes y después del proceso de incorporación al modelo IMSS Bienestar.
         </p>
+
+        <fieldset className="mb-7">
+          <legend className="text-sm font-bold text-zinc-800 mb-3">
+            Seleccione su perfil para abrir el cuestionario correspondiente
+          </legend>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {([
+              { role: 'director', label: 'Director(a) de hospital', Icon: Building2 },
+              { role: 'coordinador', label: 'Coordinador(a) regional', Icon: MapPin },
+            ] as const).map(({ role, label, Icon }) => {
+              const isSelected = selectedRole === role;
+              return (
+                <button
+                  key={role}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => setSelectedRole(role)}
+                  className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-colors ${
+                    isSelected
+                      ? 'border-emerald-700 bg-emerald-900 text-white shadow-md'
+                      : 'border-zinc-300 bg-white/70 text-zinc-800 hover:border-emerald-700 hover:bg-emerald-50'
+                  }`}
+                >
+                  <Icon className={`h-5 w-5 shrink-0 ${isSelected ? 'text-emerald-200' : 'text-emerald-800'}`} />
+                  <span className="text-sm font-semibold">{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
 
         {/* Objective Box */}
         <div className="p-4 sm:p-5 rounded-xl bg-white/[0.08] border border-white/15 mb-8">
@@ -66,8 +99,9 @@ export const CoverStage: React.FC<CoverStageProps> = ({ onStart }) => {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center gap-3 pt-2 border-t border-zinc-300">
           <button
-            onClick={onStart}
-            className="w-full sm:flex-1 px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm sm:text-base tracking-wide shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center space-x-2 cursor-pointer"
+            onClick={() => selectedRole && onStart(selectedRole)}
+            disabled={!selectedRole}
+            className="w-full sm:flex-1 px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 disabled:from-zinc-400 disabled:to-zinc-400 disabled:cursor-not-allowed text-white font-bold text-sm sm:text-base shadow-xl transition-all transform hover:-translate-y-0.5 disabled:transform-none flex items-center justify-center space-x-2 cursor-pointer"
           >
             <span>Comenzar Cuestionario</span>
             <ChevronRight className="w-5 h-5" />

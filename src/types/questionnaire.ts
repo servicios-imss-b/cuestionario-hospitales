@@ -6,6 +6,7 @@ export type QuestionType =
   | 'short_text'
   | 'long_text'
   | 'matrix'
+  | 'number_matrix'
   | 'ranked_select'
   | 'amount_conditional';
 
@@ -57,6 +58,7 @@ export interface Question {
   type: QuestionType;
   required: boolean;
   help?: string;
+  numberUnknownLabel?: string;
   options?: QuestionOption[];
   roleOptions?: Partial<Record<UserRole, QuestionOption[]>>;
   roleDisplayIds?: Partial<Record<UserRole, string>>;

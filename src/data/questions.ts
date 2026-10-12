@@ -17,21 +17,6 @@ export const MATRIX_C1_DIRECTOR_ITEMS: MatrixItem[] = [
   { id: 'c1_12', label: 'El Modelo médico de gestión' },
 ];
 
-export const MATRIX_C1_COORDINATOR_ITEMS: MatrixItem[] = [
-  { id: 'c1_1', label: 'Abasto de medicamentos' },
-  { id: 'c1_2', label: 'Abasto de material de curación e insumos' },
-  { id: 'c1_3', label: 'Suficiencia de médicos especialistas' },
-  { id: 'c1_4', label: 'Suficiencia de personal de enfermería' },
-  { id: 'c1_5', label: 'Equipo médico en funcionamiento' },
-  { id: 'c1_6', label: 'Conservación y mantenimiento del inmueble' },
-  { id: 'c1_7', label: 'Servicios generales (limpieza, lavandería, alimentación, vigilancia)' },
-  { id: 'c1_8', label: 'Recursos para gastos de operación' },
-  { id: 'c1_9', label: 'Trámites administrativos (compras, contratación y pagos)' },
-  { id: 'c1_10', label: 'Tiempo de espera de los pacientes' },
-  { id: 'c1_11', label: 'Referencia y contrarreferencia de pacientes' },
-  { id: 'c1_12', label: 'Sistemas informáticos y conectividad' },
-];
-
 export const MATRIX_C1_ITEMS = MATRIX_C1_DIRECTOR_ITEMS;
 
 export const MATRIX_C1_COLUMNS: QuestionOption[] = [
@@ -46,59 +31,10 @@ export const C2_OPTIONS: QuestionOption[] = MATRIX_C1_DIRECTOR_ITEMS.map((item) 
   label: item.label,
 }));
 
-export const C3_OPTIONS: QuestionOption[] = MATRIX_C1_DIRECTOR_ITEMS
-  .filter((item) => item.id !== 'c1_4_1' && item.id !== 'c1_7_1')
-  .map((item) => ({ value: item.id, label: item.label }));
-
-export const TOP_PROBLEMS_OPTIONS: QuestionOption[] = [
-  { value: 'p1', label: 'Falta de médicos especialistas' },
-  { value: 'p2', label: 'Falta de personal de enfermería o paramédico' },
-  { value: 'p3', label: 'Desabasto de medicamentos' },
-  { value: 'p4', label: 'Desabasto de material de curación e insumos' },
-  { value: 'p5', label: 'Equipo médico descompuesto u obsoleto' },
-  { value: 'p6', label: 'Infraestructura deteriorada' },
-  { value: 'p7', label: 'Fallas en servicios generales (limpieza, lavandería, alimentación, vigilancia)' },
-  { value: 'p8', label: 'Falta de recursos para gastos de operación' },
-  { value: 'p9', label: 'Trámites administrativos lentos (compras, contratación, pagos)' },
-  { value: 'p10', label: 'Saturación por exceso de demanda' },
-  { value: 'p11', label: 'Problemas de referencia y contrarreferencia de pacientes' },
-  { value: 'p12', label: 'Sistemas informáticos o conectividad' },
-  { value: 'p13', label: 'Planeación y gestión interna del hospital (procesos, coordinación entre áreas)' },
-  { value: 'p14', label: 'Dirección del hospital' },
-  { value: 'otro', label: 'Otro (especifique)' },
-];
-
 export const QUESTIONS_CATALOG: Question[] = [
   // ==========================================
   // SECCIÓN A. Perfil del informante
   // ==========================================
-  {
-    id: 'A1',
-    sectionId: 'sec_a',
-    sectionTitle: 'Sección A. Perfil del informante',
-    sectionDescription: 'Nueve preguntas de respuesta rápida; las responden directores y coordinadores.',
-    text: '¿Cuál es su cargo actual?',
-    type: 'single',
-    required: true,
-    appliesToRoles: ['director'],
-    options: [
-      { value: 'director', label: 'Director(a) de hospital' },
-      { value: 'coordinador', label: 'Coordinador(a) regional' },
-    ],
-    help: 'La ruta regional se abre al seleccionar «Coordinador(a) regional».',
-  },
-  {
-    id: 'A2_coord',
-    sectionId: 'sec_a',
-    sectionTitle: 'Sección A. Perfil del informante',
-    text: 'Seleccione su región.',
-    type: 'single',
-    required: true,
-    appliesToRoles: ['coordinador'],
-    roleDisplayIds: { coordinador: 'A1' },
-    options: [],
-    help: 'Las regiones disponibles corresponden a la entidad federativa seleccionada.',
-  },
   {
     id: 'A3',
     sectionId: 'sec_a',
@@ -229,22 +165,6 @@ export const QUESTIONS_CATALOG: Question[] = [
       { value: 'Secretaría de Salud', label: 'Secretaría de Salud' },
     ],
   },
-  {
-    id: 'A7_coord',
-    sectionId: 'sec_a',
-    sectionTitle: 'Sección A. Perfil del informante',
-    text: 'Antes de la incorporación de su estado a IMSS Bienestar ([mes y año]), ¿trabajaba en esta región?',
-    roleDisplayIds: { coordinador: 'A7' },
-    type: 'single',
-    required: true,
-    appliesToRoles: ['coordinador'],
-    options: [
-      { value: 'Sí, en el mismo cargo', label: 'Sí, en el mismo cargo' },
-      { value: 'Sí, en otro cargo', label: 'Sí, en otro cargo' },
-      { value: 'No', label: 'No' },
-    ],
-  },
-
   // ==========================================
   // SECCIÓN B. Situación general
   // ==========================================
@@ -263,15 +183,6 @@ export const QUESTIONS_CATALOG: Question[] = [
       { value: 'Mala', label: 'Mala' },
       { value: 'No me consta', label: 'No me consta' },
     ],
-    roleOptions: {
-      coordinador: [
-        { value: 'Muy buena', label: 'Muy buena' },
-        { value: 'Buena', label: 'Buena' },
-        { value: 'Regular', label: 'Regular' },
-        { value: 'Mala', label: 'Mala' },
-        { value: 'Muy mala', label: 'Muy mala' },
-      ],
-    },
   },
   {
     id: 'B2',
@@ -287,16 +198,6 @@ export const QUESTIONS_CATALOG: Question[] = [
       { value: 'Empeoró', label: 'Empeoró' },
       { value: 'No me consta', label: 'No me consta' },
     ],
-    roleOptions: {
-      coordinador: [
-        { value: 'Mejoró mucho', label: 'Mejoró mucho' },
-        { value: 'Mejoró algo', label: 'Mejoró algo' },
-        { value: 'Se mantuvo igual', label: 'Se mantuvo igual' },
-        { value: 'Empeoró algo', label: 'Empeoró algo' },
-        { value: 'Empeoró mucho', label: 'Empeoró mucho' },
-        { value: 'No me consta', label: 'No me consta' },
-      ],
-    },
     help: 'La pregunta compara periodos sin atribuir la causa; todas las opciones son balanceadas.',
   },
   {
@@ -313,16 +214,6 @@ export const QUESTIONS_CATALOG: Question[] = [
       { value: 'Empeore', label: 'Empeore' },
       { value: 'No sé', label: 'No sé' },
     ],
-    roleOptions: {
-      coordinador: [
-        { value: 'Mejore mucho', label: 'Mejore mucho' },
-        { value: 'Mejore algo', label: 'Mejore algo' },
-        { value: 'Siga igual', label: 'Siga igual' },
-        { value: 'Empeore algo', label: 'Empeore algo' },
-        { value: 'Empeore mucho', label: 'Empeore mucho' },
-        { value: 'No sé', label: 'No sé' },
-      ],
-    },
   },
 
   // ==========================================
@@ -338,7 +229,6 @@ export const QUESTIONS_CATALOG: Question[] = [
     type: 'matrix',
     required: true,
     matrixItems: MATRIX_C1_DIRECTOR_ITEMS,
-    roleMatrixItems: { coordinador: MATRIX_C1_COORDINATOR_ITEMS },
     matrixColumns: MATRIX_C1_COLUMNS,
     help: 'Seleccione una respuesta por cada renglón. Incluye «No me consta».',
   },
@@ -350,25 +240,24 @@ export const QUESTIONS_CATALOG: Question[] = [
     coordinatorText: 'Actualmente, ¿cuáles de estos aspectos son un problema grave en los hospitales de su región?',
     type: 'multiple',
     required: true,
-    appliesToRoles: ['director'],
     options: [
       ...C2_OPTIONS,
       { value: 'ninguno', label: 'Ninguno es un problema grave', exclusive: true },
     ],
-    validation: { maxSelections: 3, exactSelectionCount: 3, requiresConfirmation: true },
-    help: 'Seleccione como máximo 3 aspectos, o marque «Ninguno es un problema grave».',
+    validation: { maxSelections: 3, requiresConfirmation: true },
+    help: 'Seleccione hasta 3 aspectos, o marque «Ninguno es un problema grave».',
   },
   {
     id: 'C3',
     sectionId: 'sec_c',
     sectionTitle: 'Sección C. Comparación por área',
     text: 'Antes de que su hospital pasara a IMSS Bienestar (enero de 2024), ¿cuáles de estos aspectos eran un problema grave en su hospital?',
+    coordinatorText: 'Antes de que el estado se incorporara a IMSS Bienestar (enero de 2024), ¿cuáles de estos aspectos eran un problema grave en los hospitales de su región?',
     type: 'multiple',
     required: true,
-    appliesToRoles: ['director'],
-    validation: { requiresConfirmation: true },
+    validation: { maxSelections: 3, requiresConfirmation: true },
     options: [
-      ...C3_OPTIONS,
+      ...C2_OPTIONS,
       { value: 'ninguno', label: 'Ninguno era un problema grave', exclusive: true },
       { value: 'no_consta', label: 'No me consta', exclusive: true },
     ],
@@ -382,7 +271,6 @@ export const QUESTIONS_CATALOG: Question[] = [
     coordinatorText: '¿Hay algún servicio o área en los hospitales de su región que hoy esté cerrado o funcionando de forma parcial?',
     type: 'multiple',
     required: true,
-    appliesToRoles: ['director'],
     validation: { requiresConfirmation: true },
     options: [
       { value: 'Quirófanos', label: 'Quirófanos' },
@@ -402,7 +290,6 @@ export const QUESTIONS_CATALOG: Question[] = [
     text: 'Especifique el otro servicio o área cerrada o parcial.',
     type: 'short_text',
     required: false,
-    appliesToRoles: ['director'],
     validation: { maxLength: 150 },
     condition: (answers) => Array.isArray(answers.C4) && answers.C4.includes('Otro'),
   },
@@ -411,39 +298,51 @@ export const QUESTIONS_CATALOG: Question[] = [
     sectionId: 'sec_c',
     sectionTitle: 'Sección C. Comparación por área',
     text: 'El cierre o funcionamiento parcial más importante, ¿desde cuándo ocurre?',
+    coordinatorText: 'El cierre o funcionamiento parcial más importante en los hospitales de su región, ¿desde cuándo ocurre?',
     type: 'single',
     required: true,
-    appliesToRoles: ['director'],
     condition: (answers) => {
       const c4 = answers['C4'];
       if (!c4 || !Array.isArray(c4) || c4.length === 0) return false;
       return !c4.includes('Ninguno');
     },
     options: [
-      { value: 'Desde antes de enero de 2024', label: 'Desde antes de que pasara a IMSS Bienestar (enero de 2024)' },
+      { value: 'Desde antes de enero de 2024', label: 'Desde antes de que su hospital pasara a IMSS Bienestar (enero de 2024)' },
       { value: 'Desde después de enero de 2024', label: 'Desde después de enero de 2024' },
       { value: 'No me consta', label: 'No me consta' },
     ],
     help: 'Se activa únicamente si en la pregunta anterior señaló al menos un área cerrada o parcial.',
   },
 
+  {
+    id: 'C6',
+    sectionId: 'sec_c',
+    sectionTitle: 'Sección C. Comparación por área',
+    text: '¿Cómo describiría el almacén de su hospital para medicamentos e insumos?',
+    coordinatorText: '¿Cómo describiría el almacén para medicamentos e insumos de los hospitales de su región?',
+    type: 'single',
+    required: true,
+    options: [
+      { value: 'Espacio y condiciones suficientes', label: 'Tiene espacio y condiciones suficientes' },
+      { value: 'Espacio suficiente, condiciones inadecuadas', label: 'Tiene espacio suficiente, pero condiciones inadecuadas (temperatura, humedad, seguridad o red fría)' },
+      { value: 'Espacio insuficiente', label: 'No tiene espacio suficiente' },
+      { value: 'Sin almacén propio', label: 'No cuenta con almacén propio' },
+    ],
+  },
+
   // ==========================================
-  // SECCIÓN D. Fondo rotatorio (Directores)
+  // SECCIÓN D. Fondo rotatorio (solo directores)
   // ==========================================
   {
     id: 'D1',
     sectionId: 'sec_d',
     sectionTitle: 'Sección D. Fondo rotatorio',
-    sectionDescription: 'Mide los recursos de operación inmediata antes de la incorporación.',
     text: 'Antes de que su hospital pasara a IMSS Bienestar (enero de 2024), ¿contaba con recursos propios para gastos de operación (por ejemplo, fondo rotatorio o presupuesto asignado al hospital)?',
     type: 'amount_conditional',
     required: true,
     appliesToRoles: ['director'],
-    validation: {
-      min: 0,
-      max: 5000000,
-    },
-    help: 'Si responde «Sí», indique el monto mensual aproximado entre $0 y $5,000,000 o marque «No sé».',
+    validation: { min: 0, max: 5000000 },
+    help: 'Si responde «Sí», indique el monto mensual aproximado o marque «No sé».',
   },
   {
     id: 'D2',
@@ -476,118 +375,218 @@ export const QUESTIONS_CATALOG: Question[] = [
   },
 
   // ==========================================
-  // SECCIÓN D (Variante Coordinadores: Hospitales de la red regional)
+  // SECCIÓN E. Plantilla de personal
   // ==========================================
   {
-    id: 'D1_coord',
-    sectionId: 'sec_d_coord',
-    sectionTitle: 'Sección D. Hospitales de la red regional',
-    sectionDescription: 'Diagnóstico regional de prioridades hospitalarias.',
-    text: 'De los hospitales a su cargo, ¿cuál es su problema principal?',
-    type: 'single',
-    required: true,
-    appliesToRoles: ['coordinador'],
-    options: TOP_PROBLEMS_OPTIONS,
+    id: 'E1', sectionId: 'sec_e', sectionTitle: 'Sección E. Plantilla de personal',
+    text: 'Al día de hoy, ¿cuántas personas integran la plantilla total de su hospital? Incluya todo el personal y todos los tipos de contratación.',
+    type: 'number', required: true, appliesToRoles: ['director'], numberUnknownLabel: 'No tengo el dato',
+    validation: { min: 0 },
   },
   {
-    id: 'D1_coord_otro',
-    sectionId: 'sec_d_coord',
-    sectionTitle: 'Sección D. Hospitales de la red regional',
-    text: 'Especifique el otro problema principal de los hospitales a su cargo.',
-    type: 'short_text',
-    required: false,
-    appliesToRoles: ['coordinador'],
-    validation: { maxLength: 150 },
-    condition: (answers) => answers.D1_coord === 'otro',
+    id: 'E2', sectionId: 'sec_e', sectionTitle: 'Sección E. Plantilla de personal',
+    text: 'Del total anterior, ¿cuántas personas son personal médico (médicos generales, especialistas y residentes)?',
+    type: 'number', required: true, appliesToRoles: ['director'], numberUnknownLabel: 'No tengo el dato',
+    validation: { min: 0 },
   },
   {
-    id: 'D2_coord',
-    sectionId: 'sec_d_coord',
-    sectionTitle: 'Sección D. Hospitales de la red regional',
-    text: '¿Cuál es el principal problema de la red de hospitales de su región, más allá de cada hospital?',
-    type: 'single',
-    required: true,
-    appliesToRoles: ['coordinador'],
-    options: [
-      { value: 'Referencia y traslado entre unidades', label: 'Referencia y traslado entre unidades' },
-      { value: 'Distribución de medicamentos e insumos desde el almacén', label: 'Distribución de medicamentos e insumos desde el almacén' },
-      { value: 'Especialistas insuficientes para la región', label: 'Especialistas insuficientes para la región' },
-      { value: 'Ambulancias y transporte', label: 'Ambulancias y transporte' },
-      { value: 'Supervisión y comunicación con los hospitales', label: 'Supervisión y comunicación con los hospitales' },
-      { value: 'Coordinación con el nivel estatal o central', label: 'Coordinación con el nivel estatal o central' },
-      { value: 'Otro', label: 'Otro (especifique)' },
+    id: 'E3', sectionId: 'sec_e', sectionTitle: 'Sección E. Plantilla de personal',
+    text: 'Del total, ¿cuántas personas se dedican a la atención al usuario y al trato digno (trabajo social, módulo de atención y orientación, gestor de calidad u otras áreas afines)?',
+    type: 'number', required: true, appliesToRoles: ['director'], numberUnknownLabel: 'No tengo el dato',
+    validation: { min: 0 },
+  },
+  {
+    id: 'E4', sectionId: 'sec_e', sectionTitle: 'Sección E. Plantilla de personal',
+    text: 'Para cada tipo de personal, ¿cuántas personas necesitaría contratar como mínimo indispensable en los próximos 3 meses?',
+    type: 'number_matrix', required: true, appliesToRoles: ['director'],
+    matrixItems: [
+      { id: 'especialistas', label: 'Médicos especialistas' },
+      { id: 'generales', label: 'Médicos generales' },
+      { id: 'enfermeria_clinica', label: 'Enfermería de atención clínica' },
+      { id: 'enfermeria_especialidad', label: 'Enfermería de especialidad' },
+      { id: 'paramedicos', label: 'Personal paramédico' },
     ],
   },
   {
-    id: 'D2_coord_otro',
-    sectionId: 'sec_d_coord',
-    sectionTitle: 'Sección D. Hospitales de la red regional',
-    text: 'Especifique el problema principal de la red regional.',
-    type: 'short_text',
-    required: false,
-    appliesToRoles: ['coordinador'],
-    validation: { maxLength: 150 },
-    condition: (answers) => answers.D2_coord === 'Otro',
-  },
-  {
-    id: 'D3_coord',
-    sectionId: 'sec_d_coord',
-    sectionTitle: 'Sección D. Hospitales de la red regional',
-    text: '¿Desde cuándo existe ese problema?',
-    type: 'single',
-    required: true,
-    appliesToRoles: ['coordinador'],
-    options: [
-      { value: 'Más de 5 años antes de la incorporación', label: 'Más de 5 años antes de la incorporación' },
-      { value: 'Entre 1 y 5 años antes', label: 'Entre 1 y 5 años antes' },
-      { value: 'Menos de 1 año antes', label: 'Menos de 1 año antes' },
-      { value: 'Surgió después de la incorporación', label: 'Surgió después de la incorporación' },
-      { value: 'No me consta', label: 'No me consta' },
+    id: 'E5', sectionId: 'sec_e', sectionTitle: 'Sección E. Plantilla de personal',
+    text: 'Si anotó médicos especialistas, ¿de qué especialidades y cuántas personas necesita de cada una?',
+    type: 'number_matrix', required: true, appliesToRoles: ['director'],
+    condition: (answers) => Number(answers.E4?.especialistas) > 0,
+    matrixItems: [
+      { id: 'cirugia', label: 'Cirugía' },
+      { id: 'medicina_interna', label: 'Medicina Interna' },
+      { id: 'trauma_ortopedia', label: 'Trauma y ortopedia' },
+      { id: 'gineco_obstetricia', label: 'Ginecología y obstetricia' },
+      { id: 'pediatria', label: 'Pediatría' },
+      { id: 'anestesiologia', label: 'Anestesiología' },
+      { id: 'urgencias', label: 'Urgencias médicas' },
+      { id: 'medicina_familiar', label: 'Medicina familiar' },
+      { id: 'otra', label: 'Otra especialidad' },
     ],
   },
 
   // ==========================================
-  // SECCIÓN E. Valoración de IMSS Bienestar (Solo Directores)
+  // SECCIÓN F. Equipo electromecánico
   // ==========================================
   {
-    id: 'E1',
-    sectionId: 'sec_e',
-    sectionTitle: 'Sección E. Valoración de IMSS Bienestar',
+    id: 'F1', sectionId: 'sec_f', sectionTitle: 'Sección F. Equipo electromecánico',
+    text: '¿Qué tipo de aire acondicionado tiene su hospital?', type: 'single', required: true,
+    appliesToRoles: ['director'],
+    options: [
+      { value: 'Sistema integral', label: 'Sistema integral que climatiza todo el hospital' },
+      { value: 'Equipos individuales', label: 'Solo equipos individuales en algunas áreas (minisplits, de ventana o tipo paquete)' },
+      { value: 'Ambos', label: 'Ambos' },
+      { value: 'No cuenta', label: 'No cuenta con aire acondicionado' },
+    ],
+  },
+  {
+    id: 'F2', sectionId: 'sec_f', sectionTitle: 'Sección F. Equipo electromecánico',
+    text: '¿Su hospital cuenta con chiller (enfriador de agua para el sistema central)?', type: 'single', required: true,
+    appliesToRoles: ['director'],
+    options: [
+      { value: 'Sí, funciona', label: 'Sí, funciona' },
+      { value: 'Sí, no funciona', label: 'Sí, pero no funciona' },
+      { value: 'No cuenta', label: 'No cuenta con chiller' },
+    ],
+  },
+  {
+    id: 'F3', sectionId: 'sec_f', sectionTitle: 'Sección F. Equipo electromecánico',
+    text: '¿Cuántos equipos de aire acondicionado individuales tiene instalados su hospital? Incluya minisplits, de ventana y tipo paquete.',
+    type: 'number', required: true, appliesToRoles: ['director'], numberUnknownLabel: 'No tengo el dato',
+    validation: { min: 0 },
+  },
+  {
+    id: 'F4', sectionId: 'sec_f', sectionTitle: 'Sección F. Equipo electromecánico',
+    text: 'De ellos, ¿cuántos son minisplits?', type: 'number', required: true, appliesToRoles: ['director'],
+    numberUnknownLabel: 'No tengo el dato', validation: { min: 0 },
+    condition: (answers) => answers.F3 !== 'unknown' && Number(answers.F3) > 0,
+  },
+  {
+    id: 'F5', sectionId: 'sec_f', sectionTitle: 'Sección F. Equipo electromecánico',
+    text: 'De esos equipos individuales, ¿cuántos no funcionan hoy?', type: 'number', required: true, appliesToRoles: ['director'],
+    numberUnknownLabel: 'No tengo el dato', validation: { min: 0 },
+    condition: (answers) => answers.F3 !== 'unknown' && Number(answers.F3) > 0,
+  },
+  {
+    id: 'F6', sectionId: 'sec_f', sectionTitle: 'Sección F. Equipo electromecánico',
+    text: '¿Cuántos elevadores tiene su hospital?', type: 'number', required: true, appliesToRoles: ['director'],
+    validation: { min: 0 },
+  },
+  {
+    id: 'F7', sectionId: 'sec_f', sectionTitle: 'Sección F. Equipo electromecánico',
+    text: 'De ellos, ¿cuántos no funcionan hoy?', type: 'number', required: true, appliesToRoles: ['director'],
+    validation: { min: 0 }, condition: (answers) => Number(answers.F6) > 0,
+  },
+
+  // ==========================================
+  // SECCIÓN G. Traslado de pacientes
+  // ==========================================
+  {
+    id: 'G1', sectionId: 'sec_g', sectionTitle: 'Sección G. Traslado de pacientes',
+    text: '¿Cuántas ambulancias tiene asignadas su hospital?', type: 'number', required: true, appliesToRoles: ['director'],
+    validation: { min: 0 },
+  },
+  {
+    id: 'G2', sectionId: 'sec_g', sectionTitle: 'Sección G. Traslado de pacientes',
+    text: 'De ese total, ¿cuántas se encuentran actualmente en funcionamiento, es decir, en condiciones de dar servicio hoy?',
+    type: 'number', required: true, appliesToRoles: ['director'], validation: { min: 0 },
+    condition: (answers) => Number(answers.G1) > 0,
+  },
+  {
+    id: 'G3', sectionId: 'sec_g', sectionTitle: 'Sección G. Traslado de pacientes',
+    text: 'De las ambulancias que no funcionan, ¿cuál es la causa principal?', type: 'multiple', required: true,
+    appliesToRoles: ['director'], condition: (answers) => Number(answers.G1) > Number(answers.G2),
+    options: [
+      { value: 'Falla mecánica', label: 'Falla mecánica' },
+      { value: 'Falta de equipo médico', label: 'Falta de equipo médico' },
+      { value: 'Falta de combustible o presupuesto de operación', label: 'Falta de combustible o presupuesto de operación' },
+      { value: 'Falta de personal para operarla', label: 'Falta de personal para operarla' },
+      { value: 'Siniestro o accidente', label: 'Siniestro o accidente' },
+      { value: 'Otra', label: 'Otra' },
+    ],
+  },
+  {
+    id: 'G3_otro', sectionId: 'sec_g', sectionTitle: 'Sección G. Traslado de pacientes',
+    text: 'Especifique otra causa de ambulancias fuera de servicio.', type: 'short_text', required: false,
+    appliesToRoles: ['director'], validation: { maxLength: 150 },
+    condition: (answers) => Array.isArray(answers.G3) && answers.G3.includes('Otra'),
+  },
+  {
+    id: 'G4', sectionId: 'sec_g', sectionTitle: 'Sección G. Traslado de pacientes',
+    text: '¿Quién opera las ambulancias?', type: 'multiple', required: true, appliesToRoles: ['director'],
+    condition: (answers) => Number(answers.G1) > 0,
+    options: [
+      { value: 'IMSS-Bienestar', label: 'IMSS-Bienestar' },
+      { value: 'Gobierno estatal / Servicios Estatales de Salud', label: 'Gobierno estatal / Servicios Estatales de Salud' },
+      { value: 'Municipio', label: 'Municipio' },
+    ],
+  },
+  {
+    id: 'G5', sectionId: 'sec_g', sectionTitle: 'Sección G. Traslado de pacientes',
+    text: '¿Las ambulancias son propias o se prestan mediante un servicio?', type: 'multiple', required: true,
+    appliesToRoles: ['director'], condition: (answers) => Number(answers.G1) > 0,
+    options: [
+      { value: 'Propias', label: 'Propias' },
+      { value: 'Servicio subrogado o contratado', label: 'Servicio subrogado o contratado' },
+      { value: 'Prestadas o en comodato', label: 'Prestadas o en comodato (por ejemplo, del municipio o de Cruz Roja)' },
+    ],
+  },
+  {
+    id: 'G6', sectionId: 'sec_g', sectionTitle: 'Sección G. Traslado de pacientes',
+    text: '¿Con cuántas personas cuenta para operar las ambulancias (operadores, paramédicos o técnicos en urgencias médicas)?',
+    type: 'number', required: true, appliesToRoles: ['director'], validation: { min: 0 },
+    condition: (answers) => Number(answers.G1) > 0,
+  },
+  {
+    id: 'G7', sectionId: 'sec_g', sectionTitle: 'Sección G. Traslado de pacientes',
+    text: '¿Qué necesita su hospital en materia de ambulancias? (Seleccione hasta 3)', type: 'multiple', required: true,
+    appliesToRoles: ['director'], validation: { maxSelections: 3 },
+    options: [
+      { value: 'Más unidades', label: 'Más unidades' },
+      { value: 'Reparación o mantenimiento', label: 'Reparación o mantenimiento' },
+      { value: 'Equipamiento médico', label: 'Equipamiento médico' },
+      { value: 'Combustible o presupuesto de operación', label: 'Combustible o presupuesto de operación' },
+      { value: 'Personal operativo', label: 'Personal operativo' },
+      { value: 'Capacitación', label: 'Capacitación' },
+      { value: 'Otra', label: 'Otra' },
+    ],
+  },
+  {
+    id: 'G7_otro', sectionId: 'sec_g', sectionTitle: 'Sección G. Traslado de pacientes',
+    text: 'Especifique otra necesidad relacionada con ambulancias.', type: 'short_text', required: false,
+    appliesToRoles: ['director'], validation: { maxLength: 150 },
+    condition: (answers) => Array.isArray(answers.G7) && answers.G7.includes('Otra'),
+  },
+  {
+    id: 'G8', sectionId: 'sec_g', sectionTitle: 'Sección G. Traslado de pacientes',
+    text: 'Describa brevemente la principal necesidad o problema en el traslado de pacientes de su hospital.',
+    type: 'long_text', required: false, appliesToRoles: ['director'], validation: { maxLength: 500 },
+  },
+
+  // ==========================================
+  // SECCIÓN H. Valoración de IMSS Bienestar
+  // ==========================================
+  {
+    id: 'H1', sectionId: 'sec_h', sectionTitle: 'Sección H. Valoración de IMSS Bienestar',
     text: 'En una frase, ¿qué aspecto de IMSS Bienestar considera más positivo para su hospital?',
-    type: 'short_text',
-    required: false,
-    appliesToRoles: ['director'],
-    validation: { maxLength: 150 },
+    coordinatorText: 'En una frase, ¿qué aspecto de IMSS Bienestar considera más positivo para los hospitales de su región?',
+    type: 'short_text', required: false, validation: { maxLength: 150 },
   },
   {
-    id: 'E2',
-    sectionId: 'sec_e',
-    sectionTitle: 'Sección E. Valoración de IMSS Bienestar',
+    id: 'H2', sectionId: 'sec_h', sectionTitle: 'Sección H. Valoración de IMSS Bienestar',
     text: 'En una frase, ¿qué aspecto de IMSS Bienestar considera que más necesita mejorar?',
-    type: 'short_text',
-    required: false,
-    appliesToRoles: ['director'],
-    validation: { maxLength: 150 },
+    coordinatorText: 'En una frase, ¿qué aspecto de IMSS Bienestar considera que más necesita mejorar en los hospitales de su región?',
+    type: 'short_text', required: false, validation: { maxLength: 150 },
   },
 
   // ==========================================
-  // SECCIÓN F / CIERRE. Cierre institucional
+  // SECCIÓN I. Cierre
   // ==========================================
   {
-    id: 'F1',
-    sectionId: 'sec_f',
-    sectionTitle: 'Sección F. Cierre',
-    roleSectionIds: { coordinador: 'sec_e_coord' },
-    roleSectionTitles: { coordinador: 'Sección E. Cierre' },
-    sectionDescription: 'Propuesta de mejora estratégica hacia el nivel central.',
+    id: 'I1', sectionId: 'sec_i', sectionTitle: 'Sección I. Cierre',
     text: 'Si pudiera pedir una sola acción al nivel central para mejorar su hospital en los próximos 6 meses, ¿cuál sería?',
-    coordinatorText: 'Si pudiera pedir una sola acción al nivel central para mejorar los hospitales de la región en los próximos 6 meses, ¿cuál sería?',
-    type: 'long_text',
-    required: false,
-    validation: {
-      maxLength: 300,
-    },
-    help: 'Pregunta abierta opcional. Máximo 300 caracteres.',
+    coordinatorText: 'Si pudiera pedir una sola acción al nivel central para mejorar los hospitales de su región en los próximos 6 meses, ¿cuál sería?',
+    type: 'long_text', required: false, validation: { maxLength: 300 },
   },
 ];
 

@@ -11,17 +11,18 @@ const SUBMISSION_HEADERS = [
   'preguntas_respondidas',
   'region',
   'estado',
-  'estado',
 ];
+const QUESTION_COLUMN_HEADERS = { A3: 'edad_anios_exacta' };
 const SECTION_SHEETS = {
   sec_a: 'Seccion_A',
   sec_b: 'Seccion_B',
   sec_c: 'Seccion_C',
   sec_d: 'Seccion_D',
-  sec_d_coord: 'Seccion_D_Coordinacion',
   sec_e: 'Seccion_E',
-  sec_e_coord: 'Seccion_E_Coordinacion',
   sec_f: 'Seccion_F',
+  sec_g: 'Seccion_G',
+  sec_h: 'Seccion_H',
+  sec_i: 'Seccion_I',
 };
 
 function doGet(event) {
@@ -74,7 +75,6 @@ function doPost(event) {
         submission.answeredQuestions,
         submission.regionName || '',
         submission.submissionStatus === 'completed' ? 'Completado' : 'Borrador',
-        submission.submissionStatus === 'completed' ? 'Completado' : 'Borrador',
       ]);
 
       for (const section of submission.answersBySection) {
@@ -84,7 +84,8 @@ function doPost(event) {
         const headers = sectionSheet.getRange(1, 1, 1, sectionSheet.getLastColumn()).getValues()[0];
         const row = headers.map((header, index) => {
           if (index === 0) return submission.submissionId;
-          return toCellValue_(section.answers[header]);
+          const questionId = header === 'edad_anios_exacta' ? 'A3' : header;
+          return toCellValue_(section.answers[questionId]);
         });
         upsertRowByFolio_(sectionSheet, row);
       }
@@ -121,8 +122,17 @@ function getSubmissionsSheet_(spreadsheet) {
 function getSectionSheet_(spreadsheet, sheetName, questionIds) {
   let sheet = spreadsheet.getSheetByName(sheetName);
   if (!sheet) sheet = spreadsheet.insertSheet(sheetName);
-  ensureHeaders_(sheet, ['folio'].concat(questionIds));
+  if (sheetName === 'Seccion_A') renameAgeHeader_(sheet);
+  ensureHeaders_(sheet, ['folio'].concat(questionIds.map((questionId) => QUESTION_COLUMN_HEADERS[questionId] || questionId)));
   return sheet;
+}
+
+function renameAgeHeader_(sheet) {
+  if (sheet.getLastRow() === 0 || sheet.getLastColumn() === 0) return;
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const oldColumn = headers.indexOf('A3');
+  if (oldColumn === -1 || headers.indexOf('edad_anios_exacta') !== -1) return;
+  sheet.getRange(1, oldColumn + 1).setValue('edad_anios_exacta');
 }
 
 function ensureQuestionSchema_(spreadsheet, schema) {

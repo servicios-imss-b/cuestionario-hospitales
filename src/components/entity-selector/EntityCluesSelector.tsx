@@ -13,7 +13,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { Entity, Clues, UserRole } from '../../types/questionnaire';
-import { MEXICAN_ENTITIES, normalizeCatalogText, searchClues, buildCustomClues } from '../../data/notebookCatalog';
+import { MEXICAN_ENTITIES, normalizeCatalogText, searchClues, buildCustomClues, buildRegionalClues, getRegionsForEntity } from '../../data/notebookCatalog';
 
 interface EntityCluesSelectorProps {
   selectedEntity: Entity | null;
@@ -34,7 +34,14 @@ export const EntityCluesSelector: React.FC<EntityCluesSelectorProps> = ({
 }) => {
   // Local state for interactive selection
   const [entity, setEntity] = useState<Entity | null>(selectedEntity);
-  const [clues, setClues] = useState<Clues | null>(selectedClues);
+  const [clues, setClues] = useState<Clues | null>(
+    currentRole === 'coordinador'
+      ? selectedClues?.tipo === 'Región de Coordinación' ? selectedClues : null
+      : selectedClues?.tipo === 'Región de Coordinación' ? null : selectedClues
+  );
+  const [region, setRegion] = useState(
+    selectedClues?.tipo === 'Región de Coordinación' ? selectedClues.region || '' : ''
+  );
 
   // Search input queries
   const [entityQuery, setEntityQuery] = useState('');
@@ -66,14 +73,22 @@ export const EntityCluesSelector: React.FC<EntityCluesSelectorProps> = ({
   // When selectedEntity prop changes
   useEffect(() => {
     if (selectedEntity) setEntity(selectedEntity);
-    if (selectedClues) setClues(selectedClues);
-  }, [selectedEntity, selectedClues]);
+    if (currentRole === 'coordinador') {
+      const selectedRegion = selectedClues?.tipo === 'Región de Coordinación' ? selectedClues : null;
+      setClues(selectedRegion);
+      setRegion(selectedRegion?.region || '');
+    } else {
+      setClues(selectedClues?.tipo === 'Región de Coordinación' ? null : selectedClues);
+      setRegion('');
+    }
+  }, [selectedEntity, selectedClues, currentRole]);
 
   // Handle entity change with safety warning check
   const handleSelectEntity = (newEntity: Entity) => {
     const doChange = () => {
       setEntity(newEntity);
       setClues(null); // Reset CLUES since it belongs to previous entity
+      setRegion('');
       setEntityQuery('');
       setIsEntityDropdownOpen(false);
       setCluesQuery('');
@@ -99,6 +114,11 @@ export const EntityCluesSelector: React.FC<EntityCluesSelectorProps> = ({
     } else {
       doChange();
     }
+  };
+
+  const handleSelectRegion = (newRegion: string) => {
+    setRegion(newRegion);
+    setClues(entity && newRegion ? buildRegionalClues(entity.id, newRegion) : null);
   };
 
   const handleSaveCustomClues = () => {
@@ -130,10 +150,12 @@ export const EntityCluesSelector: React.FC<EntityCluesSelectorProps> = ({
         </div>
 
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-2">
-          Selección de Entidad y Unidad Médica (CLUES)
+          {currentRole === 'coordinador' ? 'Selección de entidad y región' : 'Selección de Entidad y Unidad Médica (CLUES)'}
         </h2>
         <p className="text-xs sm:text-sm text-slate-300 mb-6">
-          Seleccione la entidad y una unidad de referencia. Los coordinadores elegirán su región en la siguiente etapa. No se solicita ningún dato personal ni cuenta de usuario.
+          {currentRole === 'coordinador'
+            ? 'Seleccione la entidad y su región de coordinación.'
+            : 'Seleccione la entidad y el hospital que dirige.'} No se solicita ningún dato personal ni cuenta de usuario.
         </p>
 
         {/* 1. Selector de Entidad Federativa */}
@@ -212,6 +234,58 @@ export const EntityCluesSelector: React.FC<EntityCluesSelectorProps> = ({
           )}
         </div>
 
+        {currentRole === 'coordinador' ? (
+          <div className="mb-6">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+              2. Región de coordinación <span className="text-emerald-400">*</span>
+            </label>
+            {!entity ? (
+              <div className="p-4 rounded-xl bg-black/20 border border-dashed border-slate-700/60 text-xs text-slate-400">
+                Primero seleccione una entidad federativa.
+              </div>
+            ) : clues ? (
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-black/40 border border-emerald-500/40">
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-5 w-5 text-emerald-400" />
+                  <div>
+                    <span className="text-xs text-slate-400 block">Región seleccionada</span>
+                    <span className="text-sm font-bold text-white">{clues.region}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const clearRegion = () => {
+                      setRegion('');
+                      setClues(null);
+                    };
+                    if (capturedAnswersCount > 0 && clues) {
+                      setPendingChangeAction(() => clearRegion);
+                      setShowWarningModal(true);
+                    } else {
+                      clearRegion();
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-600/50"
+                >
+                  Cambiar región
+                </button>
+              </div>
+            ) : (
+              <select
+                value={region}
+                onChange={(event) => handleSelectRegion(event.target.value)}
+                className="w-full rounded-xl bg-slate-900 border border-emerald-900/50 px-4 py-3 text-sm text-white outline-none focus:border-emerald-500"
+              >
+                <option value="">Seleccione una región</option>
+                {getRegionsForEntity(entity.id).map((availableRegion) => (
+                  <option key={availableRegion} value={availableRegion}>{availableRegion}</option>
+                ))}
+              </select>
+            )}
+          </div>
+        ) : (
+        <>
         {/* 2. Selector de CLUES (condicionado a Entidad) */}
         <div className="mb-6">
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
@@ -320,6 +394,8 @@ export const EntityCluesSelector: React.FC<EntityCluesSelectorProps> = ({
             </div>
           )}
         </div>
+        </>
+        )}
 
         {/* Resumen previo de Confirmación Institucional */}
         {entity && clues && (
@@ -334,8 +410,8 @@ export const EntityCluesSelector: React.FC<EntityCluesSelectorProps> = ({
                 <p className="font-bold text-white">{entity.name}</p>
               </div>
               <div>
-                <span className="text-slate-400">CLUES:</span>
-                <p className="font-mono font-bold text-emerald-300">{clues.clues}</p>
+                <span className="text-slate-400">{currentRole === 'coordinador' ? 'Región:' : 'CLUES:'}</span>
+                <p className="font-mono font-bold text-emerald-300">{currentRole === 'coordinador' ? clues.region : clues.clues}</p>
               </div>
             </div>
           </div>

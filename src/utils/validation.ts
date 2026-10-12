@@ -29,6 +29,9 @@ export function validateQuestionAnswer(question: Question, value: any): Question
   // Type specific validations
   switch (question.type) {
     case 'number': {
+      if (question.numberUnknownLabel && value === 'unknown') {
+        return { status: 'answered' };
+      }
       const num = Number(value);
       if (isNaN(num)) {
         return { status: 'error', errorMessage: 'Debe ingresar un valor numérico válido.' };
@@ -39,13 +42,13 @@ export function validateQuestionAnswer(question: Question, value: any): Question
       if (question.validation?.min !== undefined && num < question.validation.min) {
         return {
           status: 'error',
-          errorMessage: `El valor no puede ser menor a ${question.validation.min} años.`,
+          errorMessage: `El valor no puede ser menor a ${question.validation.min}.`,
         };
       }
       if (question.validation?.max !== undefined && num > question.validation.max) {
         return {
           status: 'error',
-          errorMessage: `El valor no puede ser mayor a ${question.validation.max} años.`,
+          errorMessage: `El valor no puede ser mayor a ${question.validation.max}.`,
         };
       }
       return { status: 'answered' };
@@ -93,6 +96,22 @@ export function validateQuestionAnswer(question: Question, value: any): Question
         };
       }
       return { status: 'answered' };
+    }
+
+    case 'number_matrix': {
+      const matrixVal = typeof value === 'object' && value !== null ? value : {};
+      const missingCount = (question.matrixItems || []).filter((item) =>
+        matrixVal[item.id] === undefined || matrixVal[item.id] === ''
+      ).length;
+      if (question.required && missingCount > 0) {
+        return { status: 'error', errorMessage: `Complete las cantidades de los ${missingCount} renglones pendientes.` };
+      }
+      const invalidValue = Object.values(matrixVal).some((entry) =>
+        entry !== '' && (!Number.isInteger(Number(entry)) || Number(entry) < 0)
+      );
+      return invalidValue
+        ? { status: 'error', errorMessage: 'Ingrese cantidades enteras iguales o mayores a 0.' }
+        : { status: 'answered' };
     }
 
     case 'ranked_select': {

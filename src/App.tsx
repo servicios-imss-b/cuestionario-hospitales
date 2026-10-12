@@ -9,7 +9,6 @@ import { QUESTIONS_CATALOG, getActiveQuestions } from './data/questions';
 import { calculateSurveyProgress } from './utils/progress';
 import { storageService } from './services/storage';
 import { googleSheetsService } from './services/googleSheets';
-import { buildRegionalClues, getRegionsForEntity } from './data/notebookCatalog';
 
 import { Header } from './components/layout/Header';
 import { BackgroundDecoration } from './components/layout/BackgroundDecoration';
@@ -52,15 +51,8 @@ const createSubmissionId = (): string =>
 const getQuestionsForRole = (
   role: UserRole,
   answers: Record<string, any>,
-  entityId: string | undefined
-): Question[] => getActiveQuestions(role, answers).map((question) =>
-  question.id === 'A2_coord'
-    ? {
-        ...question,
-        options: getRegionsForEntity(entityId || '').map((region) => ({ value: region, label: region })),
-      }
-    : question
-);
+  _entityId?: string
+): Question[] => getActiveQuestions(role, answers);
 
 const groupAnswersBySection = (
   questions: Question[],
@@ -91,7 +83,7 @@ const buildSubmissionSnapshot = (
   const reportedAnswers = Object.fromEntries(
     Object.entries(answers).filter(([key]) => !key.endsWith('__confirmed'))
   );
-  const regionName = role === 'coordinador' ? String(answers.A2_coord || '') : clues.region;
+  const regionName = clues.region;
 
   return {
     submissionId,
@@ -330,7 +322,7 @@ export default function App() {
             (!Array.isArray(value) || value.length > 0)
           );
           const identityReady = currentRole === 'coordinador'
-            ? Boolean(newAnswers.A2_coord)
+            ? Boolean(currentClues?.region)
             : Boolean(currentClues?.clues);
 
           if (currentEnt && currentClues && currentSubmissionId && hasAnsweredQuestion && identityReady) {
@@ -362,10 +354,7 @@ export default function App() {
   const handleAnswerChange = (questionId: string, value: any) => {
     setEditingQuestionId(null);
     autoReviewDoneRef.current = false;
-    const currentClues = questionId === 'A2_coord' && entity && typeof value === 'string'
-      ? buildRegionalClues(entity.id, value)
-      : clues;
-    if (questionId === 'A2_coord' && currentClues !== clues) setClues(currentClues);
+    const currentClues = clues;
     const currentSubmissionId = submissionId || createSubmissionId();
     if (!submissionId) setSubmissionId(currentSubmissionId);
     setAnswers((prev) => {
@@ -515,7 +504,10 @@ export default function App() {
       <main className="flex-1">
         {stage === 'cover' && (
           <CoverStage
-            onStart={() => goToStage('instructions')}
+            onStart={(selectedRole) => {
+              setRole(selectedRole);
+              goToStage('instructions');
+            }}
           />
         )}
 

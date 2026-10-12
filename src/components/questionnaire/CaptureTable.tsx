@@ -19,6 +19,7 @@ import { MatrixControl } from './QuestionControls/MatrixControl';
 import { RankedSelectControl } from './QuestionControls/RankedSelectControl';
 import { AmountConditionalControl } from './QuestionControls/AmountConditionalControl';
 import { NumberControl } from './QuestionControls/NumberControl';
+import { NumberMatrixControl } from './QuestionControls/NumberMatrixControl';
 import { TextControl } from './QuestionControls/TextControl';
 
 interface CaptureTableProps {
@@ -328,6 +329,15 @@ export const CaptureTable: React.FC<CaptureTableProps> = ({
                             />
                           )}
 
+                          {question.type === 'number_matrix' && question.matrixItems && (
+                            <NumberMatrixControl
+                              questionId={question.id}
+                              items={question.matrixItems}
+                              value={currentAns}
+                              onChange={(val) => onAnswerChange(question.id, val)}
+                            />
+                          )}
+
                           {question.type === 'ranked_select' && question.options && (
                             <RankedSelectControl
                               questionId={question.id}
@@ -352,6 +362,7 @@ export const CaptureTable: React.FC<CaptureTableProps> = ({
                               value={currentAns}
                               min={question.validation?.min}
                               max={question.validation?.max}
+                              unknownLabel={question.numberUnknownLabel}
                               onChange={(val) => onAnswerChange(question.id, val)}
                               onConfirm={() => onConfirmAnswer(question.id, true)}
                             />
