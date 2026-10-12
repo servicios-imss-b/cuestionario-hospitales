@@ -197,22 +197,25 @@ export default function App() {
       setIsLoadingForm(nextStage === 'capture');
     };
 
+    const handlePageShow = () => {
+      const coverUrl = `${window.location.pathname}${window.location.search}#cover`;
+      window.history.replaceState(
+        { ...window.history.state, questionnaireStage: 'cover' },
+        '',
+        coverUrl
+      );
+      setStage('cover');
+      setIsLoadingForm(false);
+      setIsAdminPanelLoginOpen(false);
+    };
+
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
   }, []);
-
-  useEffect(() => {
-    const draft = storageService.loadDraft();
-    if (!draft?.submissionId || !draft.entity || !draft.clues || !draft.answers) return;
-
-    setEntity(draft.entity);
-    setClues(draft.clues);
-    setRole(draft.role || 'director');
-    setSubmissionId(draft.submissionId);
-    setAnswers(draft.answers);
-    autoReviewDoneRef.current = false;
-    goToStage('capture', true);
-  }, [goToStage]);
 
   useEffect(() => {
     let isCurrent = true;

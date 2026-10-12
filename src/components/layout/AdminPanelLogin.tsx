@@ -24,6 +24,7 @@ export const AdminPanelLogin: React.FC<AdminPanelLoginProps> = ({ isOpen, onClos
       return;
     }
 
+    onClose();
     window.location.assign(DASHBOARD_URL);
   };
 
