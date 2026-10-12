@@ -19,6 +19,7 @@ import { CaptureTable } from './components/questionnaire/CaptureTable';
 import { ReviewStage } from './components/questionnaire/ReviewStage';
 import { SuccessStage } from './components/questionnaire/SuccessStage';
 import { FormLoadingOverlay } from './components/layout/FormLoadingOverlay';
+import { AdminPanelLogin } from './components/layout/AdminPanelLogin';
 
 type AppStage = 'cover' | 'instructions' | 'selector' | 'capture' | 'review' | 'success';
 const APP_STAGES: AppStage[] = ['cover', 'instructions', 'selector', 'capture', 'review', 'success'];
@@ -118,11 +119,21 @@ export default function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [completedSubmission, setCompletedSubmission] = useState<SurveySubmission | null>(null);
+  const [isAdminPanelLoginOpen, setIsAdminPanelLoginOpen] = useState(false);
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const logoClickCountRef = useRef(0);
   const autoReviewDoneRef = useRef(false);
   const syncInProgressRef = useRef(false);
   const databaseConnectedRef = useRef(false);
+
+  const handleHomeLogoClick = useCallback(() => {
+    logoClickCountRef.current += 1;
+    if (logoClickCountRef.current >= 5) {
+      logoClickCountRef.current = 0;
+      setIsAdminPanelLoginOpen(true);
+    }
+  }, []);
 
   const syncPendingSubmissions = useCallback(async () => {
     if (!navigator.onLine || !googleSheetsService.isConfigured() || syncInProgressRef.current) {
@@ -485,6 +496,7 @@ export default function App() {
         saveStatus={saveStatus}
         currentStage={stage}
         isOnline={isOnline}
+        onLogoClick={stage === 'cover' ? handleHomeLogoClick : undefined}
       />
 
       {/* Main Content Area based on Stage */}
@@ -557,6 +569,10 @@ export default function App() {
           />
         )}
       </main>
+      <AdminPanelLogin
+        isOpen={isAdminPanelLoginOpen}
+        onClose={() => setIsAdminPanelLoginOpen(false)}
+      />
       <FormLoadingOverlay visible={isLoadingForm} />
     </div>
   );

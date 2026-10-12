@@ -5,23 +5,41 @@ interface HeaderProps {
   saveStatus: 'saving' | 'saved' | 'error';
   currentStage: 'cover' | 'instructions' | 'selector' | 'capture' | 'review' | 'success';
   isOnline: boolean;
+  onLogoClick?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   saveStatus,
   currentStage,
   isOnline,
+  onLogoClick,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full bg-gradient-to-b from-black/55 to-transparent transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand / Title */}
         <div className="flex items-center space-x-3">
-          <img
-            src="https://imssbienestar.gob.mx/assets/img/imb_b.svg"
-            alt="IMSS Bienestar"
-            className="h-10 w-auto object-contain"
-          />
+          {onLogoClick ? (
+            <button
+              aria-label="Logo IMSS Bienestar"
+              className="cursor-pointer border-0 bg-transparent p-0"
+              onClick={onLogoClick}
+              title="IMSS Bienestar"
+              type="button"
+            >
+              <img
+                src="https://imssbienestar.gob.mx/assets/img/imb_b.svg"
+                alt=""
+                className="h-10 w-auto object-contain"
+              />
+            </button>
+          ) : (
+            <img
+              src="https://imssbienestar.gob.mx/assets/img/imb_b.svg"
+              alt="IMSS Bienestar"
+              className="h-10 w-auto object-contain"
+            />
+          )}
           <div>
             <div className="flex items-center space-x-2">
               <h1 className="text-sm sm:text-base font-semibold text-slate-100 tracking-tight leading-none">
